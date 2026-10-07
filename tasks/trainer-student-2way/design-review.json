@@ -1,0 +1,38 @@
+{
+  "verdict": "APPROVED",
+  "findings": [
+    {
+      "id": 1,
+      "severity": "NIT",
+      "title": "firestore.rules deny blocks are redundant with the existing default-deny",
+      "where": "design.md \u00a74; firebase/firestore.rules",
+      "problem": "The three new explicit `allow read, write: if false;` matches for trainers/referralCodes/trainerLinks are redundant with the existing trailing `match /{document=**} { allow read, write: if false; }` catch-all. Not wrong, but the design implies they are functionally required.",
+      "fix": "Add a note in \u00a74 that the three matches are deliberately explicit/self-documenting guards, redundant with the default-deny; removing them changes nothing functionally."
+    },
+    {
+      "id": 2,
+      "severity": "NIT",
+      "title": "Signed-URL ADC-without-key caution does not match this repo's firebase.ts",
+      "where": "design.md \u00a72.3; backend/src/config/firebase.ts",
+      "problem": "firebase.ts has no Application Default Credentials path: both branches use admin.credential.cert(...) (key-bearing). The warning that getSignedUrl throws under keyless ADC is harmless but over-stated for this codebase.",
+      "fix": "Reword \u00a72.3 to note the current config always uses key-bearing cert credentials so signing works everywhere configured; keep the url:null fallback and no-real-signed-URL-in-emulator rule only as defense for a future ADC/emulator setup."
+    },
+    {
+      "id": 3,
+      "severity": "NIT",
+      "title": "Trainer 'email if shared' references a sharing flag that is not modeled",
+      "where": "design.md \u00a75.3 (GET /api/student/trainer) vs \u00a73.3 (trainers doc)",
+      "problem": "GET /api/student/trainer returns the trainer's 'email if shared', but the trainers doc defines a plain email with no visibility flag, and the only sharing toggle is shareProgressWithTrainer (photos). The 'if shared' qualifier has no backing mechanism.",
+      "fix": "Pick one: (a) drop 'if shared' and always return trainer contact email (trainer contact is not private student data), or (b) add trainers/{trainerId}.contactEmailPublic:boolean (default true) and gate on it. (a) is simpler and matches requirement 7."
+    },
+    {
+      "id": 4,
+      "severity": "NIT",
+      "title": "Register->link provider write should be pinned to a non-disposed Ref",
+      "where": "design.md \u00a76.4",
+      "problem": "linkTrainer is awaited after register(), but the auth-state redirect can dispose the register screen while the call is in flight. The provider-write approach survives this only if the write goes through a Ref/notifier that outlives the widget, not a disposed WidgetRef.",
+      "fix": "State explicitly in \u00a76.4 that linkTrainer writes linkTrainerResultProvider via a provider container/notifier (captured before navigation), not via a WidgetRef that may be disposed, so a mid-flight teardown cannot drop the result."
+    }
+  ],
+  "reviewDoc": "c:\\Users\\cheta\\OneDrive\\Desktop\\fit\\.agents\\tasks\\trainer-student-2way/design-review.md"
+}

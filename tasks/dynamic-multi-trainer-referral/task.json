@@ -1,0 +1,7 @@
+{
+  "task_id": "task-dynamic-multi-trainer-referral",
+  "task_description": "Evolve the existing trainer-student feature into a production-ready dynamic multi-trainer referral system: remove the fixed dreamphysics seed, add a backend referral-code lifecycle (generate/custom/change keeping links, connect-by-code resolving the exact trainer, one-active-trainer-per-student switch guard, idempotent migration), evolve the API (/api/trainer/referral-code generate/get/change/availability, /api/auth/register-trainer, dynamic link-trainer, /api/student/connect-trainer), add the Flutter USER/TRAINER account-type selector + trainer referral management + connect-from-profile + switch flow, confirm fail-closed firestore rules/indexes, and add/update tests including the nutrition Add-Food regression.",
+  "status": "completed",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003"],
+  "blocked_reason": null
+}

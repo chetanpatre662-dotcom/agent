@@ -1,0 +1,31 @@
+{
+  "project_type": "FitTrack: Flutter (Riverpod + go_router) mobile frontend + Node/Express + TypeScript backend using Firebase Admin (Auth + Firestore) and Gemini.",
+  "language": "Dart (frontend), TypeScript (backend)",
+  "build_system": "Frontend: Flutter (pub). Backend: npm + tsc (ESM, note the .js extensions on relative imports in .ts files — required by the ESM/NodeNext config, keep them).",
+  "test_framework": "Frontend: flutter_test (dev_dependencies: flutter_test, mocktail ^1.0.4, integration_test). Backend: vitest ^2.1.8 (tests live in backend/src/__tests__/*.test.ts).",
+  "build_command": "Frontend: `flutter analyze` (from frontend/). Backend: `npm run typecheck` and `npm run build` (from backend/).",
+  "test_command": "Frontend: `flutter test` (from frontend/). Backend: `npm test` i.e. `vitest run` (from backend/).",
+  "verification_instructions": "FEAT-001 (auth): from frontend/ run `flutter analyze` then `flutter test`. If adding an AuthRepository stream test, use mocktail to mock FirebaseAuth; there is currently NO auth_repository_test.dart. FEAT-002 (fcm/firestore): backend changes verified from backend/ with `npm run typecheck` && `npm test`; model new tests on backend/src/__tests__/middleware.test.ts (spins up an express app with supertest-less fetch against app.listen(0)). Frontend FcmService change verified with `flutter analyze` + a unit test mocking FirebaseMessaging/ApiClient/SharedPreferences via mocktail.",
+  "snapshot_or_generated_files": "None checked in. riverpod_generator/build_runner exist but the auth/account/fcm providers in scope are hand-written (not generated) — do not introduce codegen for them.",
+  "environment_constraints": "No physical Android device is available and the user has forbidden asking to install/test the APK again. Verification is build + unit tests only, NOT on-device. Windows host; run flutter/npm from the respective subproject directories (frontend/, backend/).",
+  "contribution_requirements": "No AGENTS.md/CONTRIBUTING.md present. Match existing style: Result<T>/Failure pattern in the Dart repo layer; providers return AsyncValue and the router distinguishes AsyncLoading from AsyncData(null) — preserve that. Backend returns { success, data } envelope via ok(res, ...). Keep backend relative imports ending in .js.",
+  "key_patterns": "Frontend auth: StreamProvider authStateProvider wraps AuthRepository.authStateChanges(); currentUserProvider = authStateProvider.valueOrNull. Router (lib/core/routing/app_router.dart) holds on splash while isLoading, routes /login only when settled-and-signed-out, routes accountInfo error to /startup-error (session preserved — never signOut on backend/network failure). FcmService is a plain Provider recreated per run with only in-memory _token (no persistence). Backend userRepository.ensureAccount creates on !exists (sets createdAt once, never rewritten) and otherwise set(patch,{merge}) with updatedAt=serverTimestamp() unconditionally; addFcmToken uses arrayUnion + unconditional updatedAt. Doc id == Firebase UID (stable identity, confirmed not a bug).",
+  "relevant_files": [
+    "frontend/lib/features/auth/data/auth_repository.dart (authStateChanges + _deferLeadingNull — the race to fix)",
+    "frontend/lib/features/auth/providers/auth_providers.dart (authStateProvider, currentUserProvider; add authReadyProvider here)",
+    "frontend/lib/core/routing/app_router.dart (redirect + refreshListenable; consume readiness gate — sound otherwise, do not add hacks)",
+    "frontend/lib/features/auth/providers/account_provider.dart (accountInfoProvider — study, error->/startup-error is correct)",
+    "frontend/lib/core/services/fcm_service.dart (FcmService.init/_registerToken — add token cache + conditional register)",
+    "frontend/lib/features/shell/home_shell.dart (initState calls fcmServiceProvider.init() every /home entry — guard re-subscribe)",
+    "frontend/lib/features/notifications/notification_providers.dart (fcmServiceProvider wiring; FcmService may need SharedPreferences)",
+    "frontend/lib/core/providers/shared_prefs_provider.dart (sharedPreferencesProvider — overridden in main.dart)",
+    "frontend/lib/main.dart (ProviderScope overrides, Firebase init order)",
+    "backend/src/repositories/userRepository.ts (ensureAccount + addFcmToken — make writes conditional)",
+    "backend/src/services/authService.ts (verifyAndSync delegates to ensureAccount)",
+    "backend/src/controllers/authController.ts (verify handler)",
+    "backend/src/controllers/notificationController.ts (registerToken handler)",
+    "backend/src/__tests__/middleware.test.ts (test harness pattern to copy)"
+  ],
+  "directory_structure": "frontend/lib/{main.dart,app.dart,core/{services,routing,providers},features/{auth,shell,notifications,...}}; frontend/test/ (unit tests); backend/src/{controllers,services,repositories,middleware,routes,validators,__tests__}; backend/src/config/firebase.ts exports getAuth/getFirestore/admin/getBucket.",
+  "audit_reference": "Full evidence in c:\\Users\\cheta\\OneDrive\\Desktop\\fit\\.agents\\tasks\\audit-findings.md — Root Cause #1 = FEAT-001; Root Causes #3,#4,#5 = FEAT-002. signOut hunt was clean; backend identity mapping is stable (not a bug)."
+}

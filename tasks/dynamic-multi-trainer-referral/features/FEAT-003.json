@@ -1,0 +1,25 @@
+{
+  "id": "FEAT-003",
+  "type": "chore",
+  "description": "Firebase config review + final cross-repo integration verification. Per design sections 3.5 and 4.8 the dynamic model requires NO firestore rules or index change: trainers/referralCodes/trainerLinks stay fail-closed (allow read, write: if false) and the existing trainerLinks composite index (trainerId ASC, status ASC, updatedAt DESC) covers the only cross-trainer query. This FEAT confirms that is still true for the evolved model, makes any genuinely-needed edit in place (flagged for user review, never committed since firebase/ is unversioned), and runs both verification gates end-to-end so the integrated system is proven. Runs last because it validates the combined output of FEAT-001 + FEAT-002. Independent of the internals of the earlier FEATs but ordered last by dependency.",
+  "status": "completed",
+  "steps": [
+    "Read c:\\Users\\cheta\\OneDrive\\Desktop\\fit\\firebase\\firestore.rules and confirm trainers/{trainerId}, referralCodes/{code}, trainerLinks/{studentUid} remain 'allow read, write: if false' (fail-closed, backend Admin SDK only) and that the dynamic multi-trainer model needs no new public read/write. If (and only if) a change is genuinely required, make it in place and FLAG it clearly for user review/deploy in the FEAT findings; do NOT commit firebase/ (it is unversioned).",
+    "Read c:\\Users\\cheta\\OneDrive\\Desktop\\fit\\firebase\\firestore.indexes.json and confirm the existing composite index on trainerLinks (trainerId ASC, status ASC, updatedAt DESC) still covers the only cross-trainer query (countActiveStudents / listByTrainer) and that referral-code lookups are single-document gets needing no index. Do not add a redundant index. Flag any change for user review.",
+    "Run the backend verification gate end-to-end: cd c:\\Users\\cheta\\OneDrive\\Desktop\\fit\\backend && npm run typecheck && npm run lint && npm test.",
+    "Run the frontend verification gate end-to-end: cd c:\\Users\\cheta\\OneDrive\\Desktop\\fit\\frontend && flutter analyze && flutter test.",
+    "Record in findings: the exact firebase/ state (no change required, or precisely what changed and that it was flagged), and that both gates passed. Do not commit firebase/."
+  ],
+  "acceptance_criteria": [
+    "firestore.rules keeps trainers/referralCodes/trainerLinks fail-closed; firestore.indexes.json still covers the trainerLinks query with no redundant index added.",
+    "Any firebase/ edit (if required at all) is flagged for user review in findings and is NOT committed.",
+    "Running `cd c:\\Users\\cheta\\OneDrive\\Desktop\\fit\\backend && npm run typecheck && npm run lint && npm test` passes.",
+    "Running `cd c:\\Users\\cheta\\OneDrive\\Desktop\\fit\\frontend && flutter analyze && flutter test` passes."
+  ],
+  "verification": [
+    "cd c:\\Users\\cheta\\OneDrive\\Desktop\\fit\\backend && npm run typecheck && npm run lint && npm test",
+    "cd c:\\Users\\cheta\\OneDrive\\Desktop\\fit\\frontend && flutter analyze && flutter test"
+  ],
+  "blocked_reason": null,
+  "findings": "firebase/ state: NO CHANGE REQUIRED (nothing edited, nothing committed — firebase/ is unversioned). (1) firestore.rules: trainers/{trainerId}, referralCodes/{code}, and trainerLinks/{studentUid} each remain 'allow read, write: if false' (fail-closed), with a trailing default-deny match. The dynamic multi-trainer model is served entirely via the backend Admin SDK (which bypasses rules) through authenticated+requireTrainer-gated /api/trainer/* endpoints, so no new public read/write is needed and none was added. (2) firestore.indexes.json: the only cross-trainer query is the trainerLinks equality filter trainerId=='..' AND status=='active', used by both trainerLinkRepository.listByTrainer and trainerRepository.countActiveStudents; both sort updatedAt in memory. The existing composite index (trainerLinks: trainerId ASC, status ASC, updatedAt DESC) fully covers these equality filters (it is a superset of the needs, never insufficient), so no index was added or removed. Referral-code lookups are single-document gets on referralCodes/{codeLower} and trainers/{id}, which need no index. (3) Both verification gates passed end-to-end: BACKEND (cd backend) npm run typecheck + npm run lint clean; npm test = 149 tests across 21 files, all pass. FRONTEND (cd frontend) flutter analyze = No issues found; flutter test = all 122 tests pass. No backend/frontend source files were modified by this FEAT (verification/review only); the only working-tree change is a generated backend node_modules/.vite test cache, which was intentionally not committed."
+}

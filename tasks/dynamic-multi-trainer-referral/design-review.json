@@ -1,0 +1,30 @@
+{
+  "verdict": "APPROVED",
+  "findings": [
+    {
+      "id": 1,
+      "severity": "NIT",
+      "title": "_ReferralCard is render-gated on a non-empty code, so a code-less trainer cannot reach the Generate affordance",
+      "location": "design.md §5.2; frontend/lib/features/trainer/presentation/trainer_profile_screen.dart",
+      "problem": "The Change/Generate and custom-code affordance lives inside _ReferralCard, which the Profile screen renders only when profile.referralCode is non-empty. The design's own §5.7 edge case (trainer registration fails after Firebase user creation) produces a code-less trainer, who would then have no in-Profile path to create a first code, conflicting with the 'create it later from Profile' requirement.",
+      "fix": "Render the trainer referral section unconditionally for trainer accounts. When referralCode is null/empty, show a 'Create referral code' state (Generate / Choose custom) instead of hiding the card."
+    },
+    {
+      "id": 2,
+      "severity": "NIT",
+      "title": "GET /api/student/trainer response shape to MyTrainer.none mapping is assumed but not stated",
+      "location": "design.md §5.3, §5.5; backend/src/services/studentService.ts",
+      "problem": "studentService.getTrainer returns { trainer: null } for the no-active-link case, but §5.3/§5.5 reference a MyTrainer.none state without stating the parse mapping or confirming the endpoint is unchanged.",
+      "fix": "In §5.5 state explicitly: { trainer: null } maps to MyTrainer.none and { trainer: {...} } to MyTrainer.connected; confirm GET /api/student/trainer needs no backend change."
+    },
+    {
+      "id": 3,
+      "severity": "NIT",
+      "title": "registerTrainerSchema takes email/photoUrl from the token 'where possible' without pinning absent-field behavior",
+      "location": "design.md §4.5, §4.6",
+      "problem": "register-trainer reads email/photoUrl from the verified token 'where possible', but email can be absent on some providers and there is no photo on an email/password token. The design does not state what the trainer doc stores when these are missing.",
+      "fix": "Pin the rule: email is read from the decoded token (req.user.email) and stored as null if absent; photoUrl defaults to null at registration (deferred per §8); the client never asserts either."
+    }
+  ],
+  "reviewDoc": "c:\\Users\\cheta\\OneDrive\\Desktop\\fit\\.agents\\tasks\\dynamic-multi-trainer-referral\\design-review.md"
+}

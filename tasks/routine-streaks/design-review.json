@@ -1,0 +1,30 @@
+{
+  "verdict": "CHANGES_REQUESTED",
+  "findings": [
+    {
+      "id": 1,
+      "severity": "MEDIUM",
+      "area": "streak-strictness",
+      "location": "routine-design.md §5.1 step 1 (\"Day < today\" historical qualification); §12 edge rules",
+      "problem": "The historical required-set rule is ambiguous for a past day on which a required routine was scheduled but the user never acted, so no routineCompletion doc was ever written. Completions are only written on explicit action (verified: routineRepository.setCompletion; no backfill seeds pending docs). The §5.1 filter gates the required set on aCompletionRecordExistsFor(r.id, day), which makes a fully-skipped day have an empty required set -> treated as neutral and NOT breaking the streak, contradicting spec item 12 and the design's own §12 ('required-but-incomplete day breaks the streak'). The phrase 'or should have written' is undefined. Result: skipping an entire day could preserve a streak while completing 4/5 breaks it.",
+      "fix": "Define the historical required set independent of completion-doc existence: for a day < today, required = routines.filter(r => r.isRequiredForStreak === true && isRoutineOnDate(r, day)) over current definitions (include an archived routine only if it has >=1 completion record that day, to stop a newly-created routine from retroactively breaking old days -- state this carve-out). A day qualifies iff required is non-empty AND every member has a 'completed' record for that dateKey; a required member with no record or a pending/skipped record is a MISS that breaks the streak. Remove the 'or should have written' wording and the completion-existence gate from the required-set definition. Add a unit case: 'past day with a required routine and zero completion records => miss (breaks streak), not neutral.'"
+    },
+    {
+      "id": 2,
+      "severity": "NIT",
+      "area": "calc-signature",
+      "location": "routine-design.md §4.4, §13",
+      "problem": "isRoutineOnDate changes from (repeatDays: number[], dateKey) to (routineObject, dateKey). Verified the one existing caller routineService.getDay passes isRoutineOnDate((r.repeatDays as number[]) ?? [], dateKey). The additive change is right but is a breaking signature change for that call site.",
+      "fix": "In §13's routineService.ts edit bullet, explicitly state the getDay call site is migrated to pass the routine object, and that routineCalc.test.ts legacy cases (bare repeatDays, empty=every day) are preserved via the back-compat branch the design already lists."
+    },
+    {
+      "id": 3,
+      "severity": "NIT",
+      "area": "firestore-index",
+      "location": "routine-design.md §3 (Finding 6), §13",
+      "problem": "Claim that the monthly routineCompletions two-bound range on dateKey needs no new index relies on Firestore automatic single-field indexes. This is correct standard behavior and consistent with the current index file, but is only provable at runtime against a live project.",
+      "fix": "No change required for correctness. Optional: orderBy('dateKey') in the month aggregator to make the query plan unambiguous, keep a one-line comment in routineRepository noting reliance on the automatic index, and confirm during backend verification that the month query does not throw FAILED_PRECONDITION."
+    }
+  ],
+  "reviewDoc": "c:\\Users\\cheta\\OneDrive\\Desktop\\fit\\.agents\\tasks\\routine-streaks\\design-review.md"
+}

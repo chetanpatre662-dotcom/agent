@@ -1,0 +1,7 @@
+{
+  "task_id": "task-trainer-student-2way",
+  "task_description": "Implement the FitTrack AI 2-way Trainer+Student system (server-trusted role, dreamphysics trainer seed, trainer backend slice with cross-trainer/cross-student authorization, fail-closed firestore rules, registration referral linking, Flutter role-based routing + dedicated trainer shell/dashboard/student-detail + student 'My Trainer' view on the Midnight Energy theme, all additive and non-breaking) plus the nutrition Add-Food root-cause fix (backend getDay drops mealId/mealName) with client-supplied-id idempotency. Per approved design .agents/tasks/trainer-student-2way/design.md.",
+  "status": "completed",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003", "FEAT-004"],
+  "blocked_reason": null
+}

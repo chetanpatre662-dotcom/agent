@@ -1,0 +1,7 @@
+{
+  "task_id": "task-trainer-role-session-fix",
+  "task_description": "Fill the gaps in the FitTrack AI trainer/user role & session system without rebuilding the already-correct parts. The one genuine behavioral change: replace immediate trainer auto-link with a PENDING request + trainer Approve/Reject flow. Also: UI rename Referral Code -> Trainer Code (user-visible strings only), add a client-local SessionStore (firebaseUid/email/role) as a startup hint only, and fix trainer-provider leakage on logout. Must not break existing user/trainer functionality or the hardened backend-authoritative startup.",
+  "status": "pending",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003"],
+  "blocked_reason": null
+}

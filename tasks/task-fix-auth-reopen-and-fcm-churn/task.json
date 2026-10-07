@@ -1,0 +1,7 @@
+{
+  "task_id": "task-fix-auth-reopen-and-fcm-churn",
+  "task_description": "Fix two independent production bugs in FitTrack found by the forensic audit. (A) Logged-in users are routed to /login on every app reopen because the cold-start Firebase session-restore race in AuthRepository._deferLeadingNull is not fully closed by Future.microtask; gate router readiness on FirebaseAuth.authStateReady() instead. (B) FCM token + users/{uid} Firestore doc are rewritten on every login/startup: the Flutter client registers the FCM token unconditionally on every entry to /home, and the backend writes users/{uid}.updatedAt unconditionally in ensureAccount (/api/auth/verify) and addFcmToken (/api/notifications/register-token). Make all three writes conditional and cache the registered token on the client.",
+  "status": "completed",
+  "feature_order": ["FEAT-001", "FEAT-002"],
+  "blocked_reason": null
+}
